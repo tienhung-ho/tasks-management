@@ -86,7 +86,7 @@ module.exports.detail = async (req, res) => {
 module.exports.edit = async (req, res) => {
   try {
     const status = req.body.status
-    const id = req.params.id
+    const id = req.body.id
   
   
     if (status) {
