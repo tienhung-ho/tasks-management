@@ -82,7 +82,7 @@ module.exports.detail = async (req, res) => {
   }
 }
 
-// [GET] /api/v1/tasks/change-status/:id
+// [GET] /api/v1/tasks/change-status
 module.exports.edit = async (req, res) => {
   try {
     const status = req.body.status
@@ -101,6 +101,43 @@ module.exports.edit = async (req, res) => {
       code: 200,
       message: 'Updated!'
     })
+  }
+  catch(err) {
+    res.json({
+      code: 400,
+      message: 'Could not update!'
+    })
+  }
+}
+
+// [GET] /api/v1/tasks/change-status
+module.exports.changeMulti = async (req, res) => {
+  try {
+    const { ids, key, value } = req.body
+
+    if (ids.length > 0) {
+      switch(key) {
+        case "status":
+          await TaskModel.updateMany({
+            _id: { $in: ids }
+            }, { status: value } 
+          )
+          res.json({
+            code: 200,
+            message: 'Updated!'
+          })
+          break
+        
+
+        default:
+          res.json({
+            code: 400,
+            message: 'Not Found ITEM!'
+          })
+      }
+    }
+
+    
   }
   catch(err) {
     res.json({

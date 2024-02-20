@@ -14,5 +14,7 @@ router.get('/detail/:id', taskController.detail)
 
 router.patch('/change-status', taskController.edit)
 
+router.patch('/change-multi', taskController.changeMulti)
+
 
 module.exports = router
