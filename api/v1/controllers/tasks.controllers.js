@@ -84,7 +84,7 @@ module.exports.detail = async (req, res) => {
 }
 
 // [PATCH] /api/v1/tasks/change-status
-module.exports.edit = async (req, res) => {
+module.exports.changeStatus = async (req, res) => {
   try {
     const status = req.body.status
     const id = req.body.id
