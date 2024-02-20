@@ -12,4 +12,5 @@ router.get('/', taskController.index)
 
 router.get('/detail/:id', taskController.detail)
 
+
 module.exports = router
