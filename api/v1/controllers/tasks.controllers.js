@@ -82,5 +82,31 @@ module.exports.detail = async (req, res) => {
   }
 }
 
-// [GET]
+// [GET] /api/v1/tasks/change-status/:id
+module.exports.edit = async (req, res) => {
+  try {
+    const status = req.body.status
+    const id = req.params.id
+  
+  
+    if (status) {
+      await TaskModel.updateOne({
+        _id: id
+      }, {
+        status
+      })
+  
+    }
+    res.json({
+      code: 200,
+      message: 'Updated!'
+    })
+  }
+  catch(err) {
+    res.json({
+      code: 400,
+      message: 'Could not update!'
+    })
+  }
+}
 
