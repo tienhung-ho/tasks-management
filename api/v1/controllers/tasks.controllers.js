@@ -1,11 +1,15 @@
 
 const TaskModel = require('../models/tasks.model')
+
+// Helpers
 const paginationHelpers = require('../../../helpers/pagination.helpers')
+const searchHelpers = require('../../../helpers/search.helpers')
 
 // [GET] /api/v1/tasks
 module.exports.index = async (req, res) => {
   let filter  = {}
   let sort = {}
+
   if (req.query.status) {
     const status = req.query.status
 
@@ -37,6 +41,16 @@ module.exports.index = async (req, res) => {
   const pagination = paginationHelpers(initPagination, req.query, numberOfTasks)
 
   // END PAGINATION
+
+
+  // START SEARCH
+    let objSearch = searchHelpers(req.query)
+    
+    if (req.query.keyWord) {
+      filter.title = objSearch.regex
+    }
+
+  // END SEARCH 
 
   const tasks = await TaskModel.find(
     filter,
