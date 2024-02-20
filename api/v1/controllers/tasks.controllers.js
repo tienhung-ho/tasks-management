@@ -128,6 +128,19 @@ module.exports.changeMulti = async (req, res) => {
             message: 'Updated!'
           })
           break
+
+          case "delete":
+            await TaskModel.updateMany({
+              _id: { $in: ids }
+              }, { deleted: true, 
+                deletedAt: new Date()
+              } 
+            )
+            res.json({
+              code: 200,
+              message: 'Deleted!'
+            })
+            break
         
 
         default:
