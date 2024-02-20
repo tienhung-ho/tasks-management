@@ -1,8 +1,8 @@
 
-const TaskModel = require('../../../models/tasks.model')
+const TaskModel = require('../models/tasks.model')
 
 
-// [GET] /api/v1
+// [GET] /api/v1/tasks
 module.exports.index = async (req, res) => {
   const tasks = await TaskModel.find({
     deleted: false
@@ -11,7 +11,7 @@ module.exports.index = async (req, res) => {
   res.json(tasks)
 }
 
-// [GET] /api/v1/detail/:id
+// [GET] /api/v1/tasks/detail/:id
 module.exports.detail = async (req, res) => {
   try {
     const id = req.params.id
