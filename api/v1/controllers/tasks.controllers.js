@@ -148,7 +148,7 @@ module.exports.changeMulti = async (req, res) => {
   }
 }
 
-// [PATCH] /api/v1/tasks/create
+// [POST] /api/v1/tasks/create
 module.exports.create = async (req, res) => {
   try {
     
@@ -160,6 +160,33 @@ module.exports.create = async (req, res) => {
       message: 'Created!',
       data: data
     })
+  }
+  catch(err) {
+    res.json({
+      code: 400,
+      message: 'Something wrong!'
+    })
+  }
+}
+
+// [PATCH] /api/v1/tasks/edit
+module.exports.edit = async (req, res) => {
+  try {
+    const id = req.body.id
+    
+    if (id) {
+      const data = req.body
+      await TaskModel.updateOne({
+        _id: id,
+      }, data )
+
+      console.log(req.body);
+      
+      res.json({
+        code: 200,
+        message: 'Updated!',
+      })
+    }
   }
   catch(err) {
     res.json({

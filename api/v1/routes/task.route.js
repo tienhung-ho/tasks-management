@@ -12,7 +12,7 @@ router.get('/', taskController.index)
 
 router.get('/detail/:id', taskController.detail)
 
-// router.patch('/edit', taskController.edit)
+router.patch('/edit', taskController.edit)
 
 router.patch('/change-status', taskController.changeStatus)
 
