@@ -20,5 +20,7 @@ router.patch('/change-multi', taskController.changeMulti)
 
 router.post('/create', taskController.create)
 
+router.delete('/delete', taskController.delete)
+
 
 module.exports = router

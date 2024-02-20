@@ -179,8 +179,6 @@ module.exports.edit = async (req, res) => {
       await TaskModel.updateOne({
         _id: id,
       }, data )
-
-      console.log(req.body);
       
       res.json({
         code: 200,
@@ -196,5 +194,29 @@ module.exports.edit = async (req, res) => {
   }
 }
 
-
+// [DELETE] /api/v1/tasks/delete
+module.exports.delete = async (req, res) => {
+  try {
+    const id = req.body.id
+    
+    if (id) {
+      await TaskModel.updateOne({
+        _id: id,
+      }, { deleted: true,
+        deletedAt: new Date()
+      } )
+      
+      res.json({
+        code: 200,
+        message: 'Deleted!',
+      })
+    }
+  }
+  catch(err) {
+    res.json({
+      code: 400,
+      message: 'Something wrong!'
+    })
+  }
+}
 
