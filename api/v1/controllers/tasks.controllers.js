@@ -4,6 +4,7 @@ const TaskModel = require('../models/tasks.model')
 // Helpers
 const paginationHelpers = require('../../../helpers/pagination.helpers')
 const searchHelpers = require('../../../helpers/search.helpers')
+const { log } = require('console')
 
 // [GET] /api/v1/tasks
 module.exports.index = async (req, res) => {
@@ -82,7 +83,7 @@ module.exports.detail = async (req, res) => {
   }
 }
 
-// [GET] /api/v1/tasks/change-status
+// [PATCH] /api/v1/tasks/change-status
 module.exports.edit = async (req, res) => {
   try {
     const status = req.body.status
@@ -110,7 +111,7 @@ module.exports.edit = async (req, res) => {
   }
 }
 
-// [GET] /api/v1/tasks/change-status
+// [PATCH] /api/v1/tasks/change-status
 module.exports.changeMulti = async (req, res) => {
   try {
     const { ids, key, value } = req.body
@@ -142,8 +143,31 @@ module.exports.changeMulti = async (req, res) => {
   catch(err) {
     res.json({
       code: 400,
-      message: 'Could not update!'
+      message: 'Something wrong!'
     })
   }
 }
+
+// [PATCH] /api/v1/tasks/create
+module.exports.create = async (req, res) => {
+  try {
+    
+    const data = new TaskModel(req.body)
+    data.save() 
+    
+    res.json({
+      code: 200,
+      message: 'Created!',
+      data: data
+    })
+  }
+  catch(err) {
+    res.json({
+      code: 400,
+      message: 'Something wrong!'
+    })
+  }
+}
+
+
 
