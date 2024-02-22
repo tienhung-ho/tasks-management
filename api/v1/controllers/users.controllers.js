@@ -32,16 +32,16 @@ module.exports.register = async (req, res) => {
         email: record.email,
         password: hashedPassword
       })
-        
+
       const token = jwt.sign({ _id: user._id, }, `${keySecret}`)
 
       user.tokenUser = token
       user.save()
 
-      // res.cookie('jwt', token, {
-      //   httpOnly: true,
-      //   maxAge: 60 * 60 * 1000
-      // })
+      res.cookie('jwt', token, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 1000
+      })
   
       res.json({
         code: 200,

@@ -7,7 +7,7 @@ const usersControllers = require('../controllers/users.controllers')
 
 
 
-router.get('/register', usersControllers.register)
+router.post('/register', usersControllers.register)
 
 
 
