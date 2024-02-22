@@ -3,6 +3,11 @@ const UserModel = require('../models/users.model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../../../../../../project/backend/app/models/user.model')
+const ForgotPasswordModel = require('../models/forgot-password.model')
+
+// helpers
+const genarate = require('../../../helpers/genarate')
+const sendMail = require('../../../helpers/send-mail')
 
 // [POST] /api/v1/users/register
 module.exports.register = async (req, res) => {
@@ -114,5 +119,50 @@ module.exports.login = async (req, res) => {
     })
   }
 }
+
+// [POST] /api/v1/users/password/forgot
+module.exports.forgotPassword = async (req, res) => {
+
+  const email = req.body.email
+
+  const user = await UserModel.findOne({
+    email: email,
+    deleted: false
+  })
+
+  if (!user) {
+    res.json({
+      code: 400,
+      message: 'Email is not exist!',
+    })
+
+    return
+  }
+
+  const otp = genarate.genarateRanNumber(4)
+
+  const timeExpire = 1
+
+  const objForgotPass = {
+    email,
+    otp,
+    expireAt: Date.now(),
+  }
+
+  const forgotPassword = new ForgotPasswordModel(objForgotPass)
+  forgotPassword.save()
+
+  // SEND EMAIL 
+  const sub = "Mã OTP CỦA BẠN!"
+  const html = `Mã OTP xác minh là <b>${otp}</b> sẽ hết hạn sau 1p`
+
+  sendMail.sendMail(email, sub, html)
+
+  res.json({
+    code: 200,
+    message: 'Đã gửi mã otp qua email',
+  })
+}
+
 
 
