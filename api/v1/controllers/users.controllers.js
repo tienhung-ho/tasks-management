@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../../../../../../project/backend/app/models/user.model')
 
-// [GET] /api/v1/users/register
+// [POST] /api/v1/users/register
 module.exports.register = async (req, res) => {
   try {
     const record = req.body
@@ -59,3 +59,60 @@ module.exports.register = async (req, res) => {
     })
   }
 }
+
+// [POST] /api/v1/users/login
+module.exports.login = async (req, res) => {
+  try {
+    const record = req.body
+
+    const keySecret = process.env.KEYSECRET
+
+    const existUser = await UserModel.findOne({
+      email: record.email,
+      deleted: false
+    })
+
+    if (existUser) {
+      const corectUser = await bcrypt.compare(record.password, existUser.password)
+      // console.log(corectUser);
+      if (corectUser) {
+        const token = jwt.sign({ _id: existUser._id, }, `${keySecret}`)
+
+        existUser.tokenUser = token
+        existUser.save()
+
+
+
+        res.cookie('jwt', token, {
+          httpOnly: true,
+          maxAge: 60 * 60 * 1000
+        })
+
+        res.json({
+          code: 200,
+          message: 'Logined',
+          data: token
+        })
+      }
+
+
+    }
+    
+    else {
+      res.json({
+        code: 400,
+        message: 'Email is not exist!',
+      })
+    }
+
+
+  }
+  catch(err) {
+    res.json({
+      code: 400,
+      message: 'Could not login!',
+    })
+  }
+}
+
+
