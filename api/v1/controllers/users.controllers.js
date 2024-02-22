@@ -8,6 +8,7 @@ const ForgotPasswordModel = require('../models/forgot-password.model')
 // helpers
 const genarate = require('../../../helpers/genarate')
 const sendMail = require('../../../helpers/send-mail')
+const { model } = require('mongoose')
 
 // [POST] /api/v1/users/register
 module.exports.register = async (req, res) => {
@@ -99,6 +100,12 @@ module.exports.login = async (req, res) => {
           data: token
         })
       }
+      else {
+        res.json({
+          code: 400,
+          message: 'Sai mật khẩu',
+        })
+      }
 
 
     }
@@ -164,7 +171,7 @@ module.exports.forgotPassword = async (req, res) => {
   })
 }
 
-// [POST] /api/v1/users/password/forgot
+// [POST] /api/v1/users/password/otp
 module.exports.otpPassword = async (req, res) => {
   const keySecret = process.env.KEYSECRET
 
@@ -207,6 +214,48 @@ module.exports.otpPassword = async (req, res) => {
   res.json({
     code: 200,
     message: 'Xác thực thành công!',
+  })
+
+}
+
+// [POST] /api/v1/users/password/reset
+module.exports.resetPassword = async (req, res) => {
+  const password  = req.body.password
+  const token = req.cookies.jwt
+
+
+  const user = await UserModel.findOne({
+    tokenUser: token,
+  })
+
+  const corectPass = await bcrypt.compare(password, user.password) 
+
+  if (corectPass) {
+    res.json({
+      code: 400,
+      message: 'Vui lòng nhập mật khẩu mới khác với mật khẩu cũ!',
+    })
+
+    return
+  }
+
+  const keySecret = process.env.KEYSECRET
+  const salt = await bcrypt.genSalt(parseInt(process.env.SALT))
+  const hashedPassword = await bcrypt.hash(password, salt)
+
+  await UserModel.updateOne({
+    tokenUser: token,
+
+  },
+  {
+    password: hashedPassword
+  }
+  
+  )
+
+  res.json({
+    code: 200,
+    message: 'Thay đổi thành công1',
   })
 
 }

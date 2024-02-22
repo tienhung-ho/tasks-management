@@ -13,6 +13,8 @@ router.post('/password/forgot', usersControllers.forgotPassword)
 
 router.post('/password/otp', usersControllers.otpPassword)
 
+router.post('/password/reset', usersControllers.resetPassword)
+
 
 
 module.exports = router
