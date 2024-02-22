@@ -8,7 +8,6 @@ const ForgotPasswordModel = require('../models/forgot-password.model')
 // helpers
 const genarate = require('../../../helpers/genarate')
 const sendMail = require('../../../helpers/send-mail')
-const { model } = require('mongoose')
 
 // [POST] /api/v1/users/register
 module.exports.register = async (req, res) => {
@@ -242,16 +241,19 @@ module.exports.resetPassword = async (req, res) => {
   const keySecret = process.env.KEYSECRET
   const salt = await bcrypt.genSalt(parseInt(process.env.SALT))
   const hashedPassword = await bcrypt.hash(password, salt)
-
-  await UserModel.updateOne({
-    tokenUser: token,
-
-  },
-  {
-    password: hashedPassword
-  }
   
-  )
+  const newToken = jwt.sign({ _id: user._id, }, `${keySecret}`)
+
+  user.tokenUser = newToken
+  user.password  = hashedPassword
+
+  user.save()
+
+
+  res.cookie('jwt', user.tokenUser, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 1000
+  })
 
   res.json({
     code: 200,
@@ -260,6 +262,33 @@ module.exports.resetPassword = async (req, res) => {
 
 }
 
+// [GET] /api/v1/users/detail
+module.exports.detail = async (req, res) => {
+
+  try {
+    const token = req.cookies.jwt
+    
+
+    const user = await UserModel.findOne({
+      tokenUser: token,
+      deleted: false
+    }).select('fullName email status')
+  
+    res.json({
+      code: 200,
+      message: 'Thay đổi thành công1',
+      user,
+    })
+
+  }
+  catch(err) {
+
+    res.json({
+      code: 400,
+      message: 'Please Login!',
+    })
+  }
+}
 
 
 

@@ -9,6 +9,8 @@ router.post('/register', usersControllers.register)
 
 router.post('/login', usersControllers.login)
 
+router.get('/detail', usersControllers.detail)
+
 router.post('/password/forgot', usersControllers.forgotPassword)
 
 router.post('/password/otp', usersControllers.otpPassword)
