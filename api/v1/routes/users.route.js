@@ -11,6 +11,8 @@ router.post('/login', usersControllers.login)
 
 router.post('/password/forgot', usersControllers.forgotPassword)
 
+router.post('/password/otp', usersControllers.otpPassword)
+
 
 
 module.exports = router

@@ -164,5 +164,54 @@ module.exports.forgotPassword = async (req, res) => {
   })
 }
 
+// [POST] /api/v1/users/password/forgot
+module.exports.otpPassword = async (req, res) => {
+  const keySecret = process.env.KEYSECRET
+
+  const { email, otp } = req.body
+
+  console.log(email, otp);
+
+  const forgotPassWord = await ForgotPasswordModel.findOne({
+    email, 
+    otp
+  })
+
+  if (!forgotPassWord) {
+    res.json({
+      code: 400,
+      message: 'Otp không hợp lệ!',
+    })
+
+    return
+  }
+
+  const user = await UserModel.findOne({
+    email,
+    deleted: false
+  })
+
+  const token = jwt.sign({ _id: user._id, }, `${keySecret}`)
+
+  user.tokenUser = token
+  user.save()
+
+
+
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 1000
+  })
+
+
+  res.json({
+    code: 200,
+    message: 'Xác thực thành công!',
+  })
+
+}
+
+
+
 
 
