@@ -3,6 +3,8 @@ require('dotenv').config()
 
 const express = require('express')
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
+
 const app = express()
 
 
@@ -12,6 +14,7 @@ const database = require('./config/database/index')
 database.conect()
 
 const bodyParser = require('body-parser')
+app.use(cookieParser())
 
 const port = process.env.PORT
 
