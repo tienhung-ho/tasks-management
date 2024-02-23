@@ -2,7 +2,6 @@
 const UserModel = require('../models/users.model')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const User = require('../../../../../../project/backend/app/models/user.model')
 const ForgotPasswordModel = require('../models/forgot-password.model')
 
 // helpers
