@@ -166,6 +166,7 @@ module.exports.create = async (req, res) => {
   try {
     
     const data = new TaskModel(req.body)
+    data.createdBy = req.user._id
     data.save() 
     
     res.json({
