@@ -10,6 +10,7 @@ const taskSchema = new mongoose.Schema(
     createdAt: Date,
     updatedAt: Date,
     createdBy: String,
+    taskParentId: String,
     updatedBy: {
       type: Array,
       default: [],
