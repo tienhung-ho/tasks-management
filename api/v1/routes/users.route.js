@@ -5,11 +5,19 @@ const router = express.Router()
 // controllers
 const usersControllers = require('../controllers/users.controllers')
 
+// middlewares
+const usersMiddlewares = require('../../../middlewares/auth.middlewares')
+
 router.post('/register', usersControllers.register)
 
 router.post('/login', usersControllers.login)
 
-router.get('/detail', usersControllers.detail)
+router.get('/detail', 
+usersMiddlewares.verifyAccessToken,
+usersControllers.detail)
+
+router.post('/refreshtoken', 
+usersControllers.refreshAccessToken)
 
 router.post('/password/forgot', usersControllers.forgotPassword)
 

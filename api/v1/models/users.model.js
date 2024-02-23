@@ -10,6 +10,7 @@ const usersSchema = new mongoose.Schema(
     type: String,
     default: generate.generateRandomString(30)
   },
+  refreshTokenUser: String,
   phone: String,
   avatar: String,
   status: {

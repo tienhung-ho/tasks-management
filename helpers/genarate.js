@@ -1,3 +1,7 @@
+
+const jwt = require('jsonwebtoken')
+const keySecret = process.env.KEYSECRET
+
 module.exports.generateRandomString = (length) => {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -21,6 +25,19 @@ module.exports.genarateRanNumber = (length) => {
     counter += 1;
   }
   return result;
+}
+
+module.exports.genarateAccessToken = (id, role) => {
+  const token = jwt.sign({ _id: id, role}, keySecret, { expiresIn: '1d' })
+
+  return token
+}
+
+module.exports.genarateRefreshToken = (id) => {
+  const token = jwt.sign({ _id: id, }, keySecret, { expiresIn: '7d' })
+
+  return token
+
 }
 
 

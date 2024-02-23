@@ -28,7 +28,6 @@ module.exports.register = async (req, res) => {
 
     else {
 
-      const keySecret = process.env.KEYSECRET
       const salt = await bcrypt.genSalt(parseInt(process.env.SALT))
       const hashedPassword = await bcrypt.hash(record.password, salt)
   
@@ -38,12 +37,14 @@ module.exports.register = async (req, res) => {
         password: hashedPassword
       })
 
-      const token = jwt.sign({ _id: user._id, }, `${keySecret}`)
+      const accessToken = genarate.genarateAccessToken(user._id, 'user')
+      const refreshToken = genarate.genarateRefreshToken(user._id)
 
-      user.tokenUser = token
+      user.tokenUser = accessToken
+      user.refreshTokenUser = refreshToken
       user.save()
 
-      res.cookie('jwt', token, {
+      res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         maxAge: 60 * 60 * 1000
       })
@@ -51,7 +52,10 @@ module.exports.register = async (req, res) => {
       res.json({
         code: 200,
         message: 'Created!',
-        data: token
+        data: {
+          accessToken,
+          refreshToken
+        }
       })
     }
 
@@ -70,8 +74,6 @@ module.exports.login = async (req, res) => {
   try {
     const record = req.body
 
-    const keySecret = process.env.KEYSECRET
-
     const existUser = await UserModel.findOne({
       email: record.email,
       deleted: false
@@ -81,14 +83,15 @@ module.exports.login = async (req, res) => {
       const corectUser = await bcrypt.compare(record.password, existUser.password)
       // console.log(corectUser);
       if (corectUser) {
-        const token = jwt.sign({ _id: existUser._id, }, `${keySecret}`)
+        const accessToken = genarate.genarateAccessToken(existUser._id, 'user')
+        const refreshToken = genarate.genarateRefreshToken(existUser._id)
 
-        existUser.tokenUser = token
+        existUser.tokenUser = accessToken
+        existUser.refreshTokenUser = refreshToken
         existUser.save()
 
 
-
-        res.cookie('jwt', token, {
+        res.cookie('refreshToken', refreshToken, {
           httpOnly: true,
           maxAge: 60 * 60 * 1000
         })
@@ -96,7 +99,7 @@ module.exports.login = async (req, res) => {
         res.json({
           code: 200,
           message: 'Logined',
-          data: token
+          accessToken
         })
       }
       else {
@@ -147,8 +150,6 @@ module.exports.forgotPassword = async (req, res) => {
 
   const otp = genarate.genarateRanNumber(4)
 
-  const timeExpire = 1
-
   const objForgotPass = {
     email,
     otp,
@@ -172,7 +173,6 @@ module.exports.forgotPassword = async (req, res) => {
 
 // [POST] /api/v1/users/password/otp
 module.exports.otpPassword = async (req, res) => {
-  const keySecret = process.env.KEYSECRET
 
   const { email, otp } = req.body
 
@@ -197,18 +197,15 @@ module.exports.otpPassword = async (req, res) => {
     deleted: false
   })
 
-  const token = jwt.sign({ _id: user._id, }, `${keySecret}`)
+  const token = genarate.genarateAccessToken(user._id, 'user')
 
   user.tokenUser = token
   user.save()
 
-
-
-  res.cookie('jwt', token, {
+  res.cookie('refreshToken', user.refreshTokenUser, {
     httpOnly: true,
     maxAge: 60 * 60 * 1000
   })
-
 
   res.json({
     code: 200,
@@ -220,7 +217,7 @@ module.exports.otpPassword = async (req, res) => {
 // [POST] /api/v1/users/password/reset
 module.exports.resetPassword = async (req, res) => {
   const password  = req.body.password
-  const token = req.cookies.jwt
+  const token = req.cookies.accessToken
 
 
   const user = await UserModel.findOne({
@@ -242,7 +239,7 @@ module.exports.resetPassword = async (req, res) => {
   const salt = await bcrypt.genSalt(parseInt(process.env.SALT))
   const hashedPassword = await bcrypt.hash(password, salt)
   
-  const newToken = jwt.sign({ _id: user._id, }, `${keySecret}`)
+  const newToken = genarate.genarateAccessToken(user._id, 'user')
 
   user.tokenUser = newToken
   user.password  = hashedPassword
@@ -250,7 +247,7 @@ module.exports.resetPassword = async (req, res) => {
   user.save()
 
 
-  res.cookie('jwt', user.tokenUser, {
+  res.cookie('refreshToken', user.refreshTokenUser, {
     httpOnly: true,
     maxAge: 60 * 60 * 1000
   })
@@ -266,17 +263,17 @@ module.exports.resetPassword = async (req, res) => {
 module.exports.detail = async (req, res) => {
 
   try {
-    const token = req.cookies.jwt
+    const { _id } = req.user
     
 
     const user = await UserModel.findOne({
-      tokenUser: token,
+      _id,
       deleted: false
     }).select('fullName email status')
   
     res.json({
       code: 200,
-      message: 'Thay đổi thành công1',
+      message: 'Chi tiết user!',
       user,
     })
 
@@ -289,6 +286,69 @@ module.exports.detail = async (req, res) => {
     })
   }
 }
+
+
+// [POST] /api/v1/users/refreshtoken
+module.exports.refreshAccessToken = async (req, res) => {
+  try {
+    
+    // Lấy cookie đã được lưu
+    const cookie = req.cookies
+  
+    if (!cookie && !cookie.refreshToken) {
+      throw new Error ('Do not have refresh Token!')
+    }
+    // kiểm tra xem có khớp với token đã lưu không
+
+    const result = jwt.verify(cookie.refreshToken, process.env.KEYSECRET)
+    const response = await UserModel.findOne({
+        _id: result._id,
+        refreshTokenUser: cookie.refreshToken,
+        deleted: false
+    })
+
+    return res.json({
+          code: 200,
+          success: response ? true : false,
+          message: 'Access Token!',
+          newAccessToken: response ? genarate.genarateAccessToken(response._id, response.role) : "Refresh Token not matched"
+        })
+
+    // jwt.verify(cookie.refreshToken, process.env.KEYSECRET, async (err, decode) => {
+    //   if (err) {
+    //     return res.json({
+    //       code: 400,
+    //       success: false,
+    //       message: 'Could not verify token!',
+    //     })
+    //   }
+      // Tìm user theo điều kiện refreshToken
+      // const response = await UserModel.findOne({
+      //   _id: decode._id,
+      //   refreshTokenUser: cookie.refreshToken,
+      //   deleted: false
+      // })
+  
+    //   return res.json({
+    //     code: 200,
+    //     success: response ? true : false,
+    //     message: 'Access Token!',
+    //     newAccessToken: response ? genarate.genarateAccessToken(response._id, response.role) : "Refresh Token not matched"
+    //   })
+    
+    // })
+  }
+  catch(err) {
+    return res.json({
+      code: 400,
+      success: false,
+      message: 'Something wrong at refresh token!',
+    })
+  }
+
+}
+
+// [POST] /api/v1/users/logout
 
 
 
