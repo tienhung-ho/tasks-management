@@ -16,6 +16,10 @@ router.get('/detail',
 usersMiddlewares.verifyAccessToken,
 usersControllers.detail)
 
+router.get('/listuser', 
+usersMiddlewares.verifyAccessToken,
+usersControllers.getAllUsers)
+
 router.post('/refreshtoken', 
 usersControllers.refreshAccessToken)
 

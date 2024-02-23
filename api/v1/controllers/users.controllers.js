@@ -287,6 +287,30 @@ module.exports.detail = async (req, res) => {
   }
 }
 
+// [GET] /api/v1/users/listuser
+module.exports.getAllUsers = async (req, res) => {
+
+  try {
+
+    const users = await UserModel.find({
+      deleted: false
+    }).select('fullName email status')
+  
+    res.json({
+      code: 200,
+      message: 'Chi tiết user!',
+      users,
+    })
+
+  }
+  catch(err) {
+
+    res.json({
+      code: 400,
+      message: 'Please Login!',
+    })
+  }
+}
 
 // [POST] /api/v1/users/refreshtoken
 module.exports.refreshAccessToken = async (req, res) => {
