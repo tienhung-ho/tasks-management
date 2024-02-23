@@ -1,6 +1,7 @@
 
 const jwt = require('jsonwebtoken')
 const keySecret = process.env.KEYSECRET
+const keySecretRefresh = process.env.KEYSECRETREFRESH
 
 module.exports.generateRandomString = (length) => {
   const characters =
@@ -28,13 +29,13 @@ module.exports.genarateRanNumber = (length) => {
 }
 
 module.exports.genarateAccessToken = (id, role) => {
-  const token = jwt.sign({ _id: id, role}, keySecret, { expiresIn: '1d' })
+  const token = jwt.sign({ _id: id, role}, keySecret, { expiresIn: '2h' })
 
   return token
 }
 
 module.exports.genarateRefreshToken = (id) => {
-  const token = jwt.sign({ _id: id, }, keySecret, { expiresIn: '7d' })
+  const token = jwt.sign({ _id: id, }, keySecretRefresh, { expiresIn: '7d' })
 
   return token
 

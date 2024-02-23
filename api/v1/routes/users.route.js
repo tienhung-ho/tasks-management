@@ -19,6 +19,10 @@ usersControllers.detail)
 router.post('/refreshtoken', 
 usersControllers.refreshAccessToken)
 
+router.post('/logout',
+usersControllers.logout)
+
+
 router.post('/password/forgot', usersControllers.forgotPassword)
 
 router.post('/password/otp', usersControllers.otpPassword)

@@ -349,6 +349,47 @@ module.exports.refreshAccessToken = async (req, res) => {
 }
 
 // [POST] /api/v1/users/logout
+module.exports.logout = async (req, res) => {
+  try {
+
+    // Lấy cookie đã được lưu
+    const cookie = req.cookies
+  
+    if (!cookie && !cookie.refreshToken) {
+      throw new Error ('Do not have refresh Token!')
+    }
+
+    
+    await UserModel.findOneAndUpdate({
+      refreshTokenUser: cookie.refreshToken
+    },
+    {
+      refreshTokenUser: ''
+    },
+    {
+      new: true
+    }
+    )
+    
+    res.clearCookie('refreshToken', { httpOnly: true });
+
+    return res.json({
+      code: 200,
+      success: true,
+      message: 'Logout is done!',
+    })
+
+
+  }
+  catch(err) {
+    return res.json({
+      code: 400,
+      success: false,
+      message: 'Something wrong at refresh token!',
+    })
+  }
+
+}
 
 
 
