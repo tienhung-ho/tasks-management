@@ -8,17 +8,22 @@ const { log } = require('console')
 
 // [GET] /api/v1/tasks
 module.exports.index = async (req, res) => {
-  let filter  = {}
+  let filter = {}
   let sort = {}
+  const status = req.query.status
+  const userId = req.user._id
 
-  if (req.query.status) {
-    const status = req.query.status
-
-    filter = {
-      status,
-    }
-
+  if (status) {
+    filter.status = req.query.status
   }
+
+  filter.$or = [
+    {
+      createdBy: userId },
+    {
+      listUsers: userId }
+  ]
+
 
   // START SORT
 
@@ -45,11 +50,11 @@ module.exports.index = async (req, res) => {
 
 
   // START SEARCH
-    let objSearch = searchHelpers(req.query)
-    
-    if (req.query.keyWord) {
-      filter.title = objSearch.regex
-    }
+  let objSearch = searchHelpers(req.query)
+
+  if (req.query.keyWord) {
+    filter.title = objSearch.regex
+  }
 
   // END SEARCH 
 
@@ -62,7 +67,7 @@ module.exports.index = async (req, res) => {
     .sort(sort)
     .limit(pagination.limitPage)
     .skip(pagination.skip)
-  
+
   res.json(tasks)
 }
 
@@ -70,15 +75,15 @@ module.exports.index = async (req, res) => {
 module.exports.detail = async (req, res) => {
   try {
     const id = req.params.id
-  
+
     const task = await TaskModel.findOne({
       _id: id,
       deleted: false
     })
-  
+
     res.json(task)
   }
-  catch(err) {
+  catch (err) {
     res.json('404 Not found')
   }
 }
@@ -88,22 +93,22 @@ module.exports.changeStatus = async (req, res) => {
   try {
     const status = req.body.status
     const id = req.body.id
-  
-  
+
+
     if (status) {
       await TaskModel.updateOne({
         _id: id
       }, {
         status
       })
-  
+
     }
     res.json({
       code: 200,
       message: 'Updated!'
     })
   }
-  catch(err) {
+  catch (err) {
     res.json({
       code: 400,
       message: 'Could not update!'
@@ -117,11 +122,11 @@ module.exports.changeMulti = async (req, res) => {
     const { ids, key, value } = req.body
 
     if (ids.length > 0) {
-      switch(key) {
+      switch (key) {
         case "status":
           await TaskModel.updateMany({
             _id: { $in: ids }
-            }, { status: value } 
+          }, { status: value }
           )
           res.json({
             code: 200,
@@ -129,19 +134,20 @@ module.exports.changeMulti = async (req, res) => {
           })
           break
 
-          case "delete":
-            await TaskModel.updateMany({
-              _id: { $in: ids }
-              }, { deleted: true, 
-                deletedAt: new Date()
-              } 
-            )
-            res.json({
-              code: 200,
-              message: 'Deleted!'
-            })
-            break
-        
+        case "delete":
+          await TaskModel.updateMany({
+            _id: { $in: ids }
+          }, {
+            deleted: true,
+            deletedAt: new Date()
+          }
+          )
+          res.json({
+            code: 200,
+            message: 'Deleted!'
+          })
+          break
+
 
         default:
           res.json({
@@ -151,9 +157,9 @@ module.exports.changeMulti = async (req, res) => {
       }
     }
 
-    
+
   }
-  catch(err) {
+  catch (err) {
     res.json({
       code: 400,
       message: 'Something wrong!'
@@ -164,18 +170,18 @@ module.exports.changeMulti = async (req, res) => {
 // [POST] /api/v1/tasks/create
 module.exports.create = async (req, res) => {
   try {
-    
+
     const data = new TaskModel(req.body)
     data.createdBy = req.user._id
-    data.save() 
-    
+    data.save()
+
     res.json({
       code: 200,
       message: 'Created!',
       data: data
     })
   }
-  catch(err) {
+  catch (err) {
     res.json({
       code: 400,
       message: 'Something wrong!'
@@ -187,20 +193,20 @@ module.exports.create = async (req, res) => {
 module.exports.edit = async (req, res) => {
   try {
     const id = req.body.id
-    
+
     if (id) {
       const data = req.body
       await TaskModel.updateOne({
         _id: id,
-      }, data )
-      
+      }, data)
+
       res.json({
         code: 200,
         message: 'Updated!',
       })
     }
   }
-  catch(err) {
+  catch (err) {
     res.json({
       code: 400,
       message: 'Something wrong!'
@@ -212,21 +218,22 @@ module.exports.edit = async (req, res) => {
 module.exports.delete = async (req, res) => {
   try {
     const id = req.body.id
-    
+
     if (id) {
       await TaskModel.updateOne({
         _id: id,
-      }, { deleted: true,
+      }, {
+        deleted: true,
         deletedAt: new Date()
-      } )
-      
+      })
+
       res.json({
         code: 200,
         message: 'Deleted!',
       })
     }
   }
-  catch(err) {
+  catch (err) {
     res.json({
       code: 400,
       message: 'Something wrong!'
